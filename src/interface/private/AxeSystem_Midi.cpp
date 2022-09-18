@@ -4,6 +4,11 @@
 #define SER_READ _serial->read()
 #define SER_SEND _serial->write
 
+// Don't block for more than approx 100ms before issuing an error. 
+// So that if a message is truncated, the next message will start in a clean state and we'll resume faster after (e.g. cable) reconnection.
+// Sample at twice the speed of receiving one char at 31200 bps (every 160us)
+#define SER_WAIT_AVAIL for (uint_16_t  i=0; i<625; i++) {if (SER_AVLB ) break; delayMicroseconds(160);}
+
 void AxeSystem::begin(HardwareSerial &serial, byte midiChannel) {
   if (!_midiReady) {
     if (_startupDelay > 0) {
@@ -33,7 +38,7 @@ void AxeSystem::readMidi() {
         if (validateSysEx(_sysexBuffer, _sysexCount)) {
           onSystemExclusive(_sysexBuffer, _sysexCount);
         } else {
-#ifdef AXE_DEBUG
+#ifdef AXE_DEBUG_ERRORS
           DEBUGGER.print(F("******** AxeSystem::readMidi(): INVALID SYSEX: "));
           char d[100];
           for (byte i = 0; i < _sysexCount; i++) {
@@ -53,8 +58,7 @@ void AxeSystem::readMidi() {
 
       case ControlChange: {
         if (filterMidiChannel(data)) {
-          while (SER_AVLB < 2)
-            ; //assume rest of message is in buffer or coming
+		  SER_WAIT_AVAIL;
           if (BANK_CHANGE_CC == SER_READ) {
             _bank = SER_READ;
           }
@@ -64,8 +68,7 @@ void AxeSystem::readMidi() {
 
       case ProgramChange: {
         if (filterMidiChannel(data)) {
-          while (SER_AVLB < 1)
-            ; //assume rest of message is in buffer or coming
+		  SER_WAIT_AVAIL;
           byte patch = SER_READ;
           onPresetChange(_bank * 128 + patch);
         }
