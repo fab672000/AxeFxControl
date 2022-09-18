@@ -7,7 +7,7 @@
 // Don't block for more than approx 100ms before issuing an error. 
 // So that if a message is truncated, the next message will start in a clean state and we'll resume faster after (e.g. cable) reconnection.
 // Sample at twice the speed of receiving one char at 31200 bps (every 160us)
-#define SER_WAIT_AVAIL for (uint_16_t  i=0; i<625; i++) {if (SER_AVLB ) break; delayMicroseconds(160);}
+#define SER_WAIT_AVAIL for (uint16_t  i=0; i<625; i++) {if (SER_AVLB ) break; delayMicroseconds(160);}
 
 void AxeSystem::begin(HardwareSerial &serial, byte midiChannel) {
   if (!_midiReady) {
