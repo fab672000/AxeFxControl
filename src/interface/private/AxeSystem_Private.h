@@ -61,6 +61,7 @@ void callConnectionStatusCallback(const bool connected);
 void callTapTempoCallback();
 void callPresetChangingCallback(const PresetNumber);
 void callPresetNameCallback(const PresetNumber, const char *, const byte);
+void callStalePresetNameCallback(const PresetNumber, const char *, const byte);
 void callSceneNameCallback(const SceneNumber, const char *, const byte);
 void callEffectsReceivedCallback(AxePreset *);
 void callPresetChangeCallback(AxePreset *);
@@ -93,6 +94,8 @@ byte _sysexFractalVersion;
 byte _tempo;
 byte _bank;
 byte _midiChannel;
+byte _maxBanks = 4; //default to MkI
+PresetNumber _maxPresets = (4 * BANK_SIZE) - 1; //default to MkI
 bool _firmwareRequested = false;
 bool _tunerEngaged = false;
 bool _systemConnected = false;
@@ -111,6 +114,7 @@ ConnectionStatusCallback _connectionStatusCallback;
 TapTempoCallback _tapTempoCallback;
 PresetChangingCallback _presetChangingCallback;
 PresetNameCallback _presetNameCallback;
+PresetNameCallback _stalePresetNameCallback;
 SceneNameCallback _sceneNameCallback;
 EffectsReceivedCallback _effectsReceivedCallback;
 PresetChangeCallback _presetChangeCallback;

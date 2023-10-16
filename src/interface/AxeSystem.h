@@ -120,6 +120,13 @@ public:
   void sendProgramChange(byte value, byte channel);
   void sendSysEx(const byte *sysex, const byte length);
 
+  // Used to calculate max presets. Defaults to 4.
+  // You can set this at any time.
+  void setMaxBanks(const byte max);
+
+  // Max presets depending on how many banks we have
+  PresetNumber maxPresets();
+
   // Well is it, or isn't it? As far as we know! This is pretty accurate
   // even if you enable/disable the tuner from the front panel.
   bool isTunerEngaged() { return _tunerEngaged; }
@@ -170,6 +177,13 @@ public:
   // are received. This is useful if you only want the name and don't care about the effects.
   typedef void (*PresetNameCallback)(const PresetNumber, const char *name, const byte length);
   void registerPresetNameCallback(PresetNameCallback);
+
+  // This we be called if we get a preset message for a preset other than the current one.
+  // Use this if you want to read all preset names. If not set, stale preset messages are dropped.
+  void registerStalePresetNameCallback(PresetNameCallback);
+
+  // We won't bother parsing the name if a callback is not registered
+  bool shouldParseStalePresets() { return _stalePresetNameCallback != NULL; }
 
   // Called when the scene name is received
   typedef void (*SceneNameCallback)(const SceneNumber, const char *name, const byte length);
@@ -222,12 +236,14 @@ public:
 
   // These are values supported by the AxeFX 3, and can't be changed.
   const static byte BANK_SIZE = 128;
-  const static byte MAX_BANKS = 4;
   const static byte MAX_SCENES = 8;
   const static byte TEMPO_MIN = 24;
   const static byte TEMPO_MAX = 250;
   const static byte MIDI_CHANNEL_OMNI = 0;
   const static byte DEFAULT_MIDI_CHANNEL = MIDI_CHANNEL_OMNI;
+
+  // These are deprecated but still here in case old code is using them
+  const static byte MAX_BANKS = 4;
   constexpr static PresetNumber MAX_PRESETS = (MAX_BANKS * BANK_SIZE) - 1;
 
   // OK, there ends the tour! Continue on to AxePreset.h,
